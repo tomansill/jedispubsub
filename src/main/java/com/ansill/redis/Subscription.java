@@ -2,17 +2,14 @@ package com.ansill.redis;
 
 import javax.annotation.Nonnull;
 
+@SuppressWarnings("unused")
 public class Subscription implements AutoCloseable{
 
-    /**
-     * Runnable that closes the subscription
-     */
+    /** Runnable that closes the subscription */
     @Nonnull
     private final Runnable closing_runnable;
 
-    /**
-     * Cancellation flag
-     */
+    /** Cancellation flag */
     private boolean is_canceled = false;
 
     /**
@@ -24,9 +21,7 @@ public class Subscription implements AutoCloseable{
         this.closing_runnable = closing_runnable;
     }
 
-    /**
-     * Cancels the subscription
-     */
+    /** Cancels the subscription */
     public void cancel(){
         this.close();
     }

@@ -1,14 +1,17 @@
 package com.ansill.redis;
 
+import javax.annotation.Nonnull;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class ResetableCountDownLatch{
 
+    @Nonnull
     private final AtomicReference<CountDownLatch> cdl = new AtomicReference<>();
 
-    private int initial_value = 0;
+    private int initial_value;
 
     public ResetableCountDownLatch(final int initial_value){
         this.initial_value = initial_value;

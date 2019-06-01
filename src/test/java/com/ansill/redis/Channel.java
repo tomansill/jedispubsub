@@ -7,9 +7,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Simple blocking channel
- */
+/** Simple blocking channel */
 public class Channel<T>{
 
     /**
@@ -18,15 +16,11 @@ public class Channel<T>{
     @Nonnull
     private final Queue<T> queue = new ConcurrentLinkedQueue<>();
 
-    /**
-     * Resettable CountDownLatch
-     */
+    /** Resettable CountDownLatch */
     @Nonnull
     private final ResetableCountDownLatch rcdl = new ResetableCountDownLatch(1);
 
-    /**
-     * Default constructor
-     */
+    /** Default constructor */
     public Channel(){
     }
 

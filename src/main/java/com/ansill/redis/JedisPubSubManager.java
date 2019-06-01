@@ -13,50 +13,34 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
-/**
- * Pubsub manager
- */
+/** Pubsub manager */
 public final class JedisPubSubManager implements AutoCloseable{
 
-    /**
-     * Channel that is always held open
-     */
+    /** Name of channel that is always held open */
     @Nonnull
     private static final String DEFAULT_CHANNEL_NAME = "DEFAULT_INACTIVE_CHANNEL";
 
-    /**
-     * Connection
-     */
+    /** Connection */
     @Nonnull
     private final Jedis connection;
 
-    /**
-     * Consumer count map
-     */
+    /** Consumer count map */
     @Nonnull
     private final Map<String,UniqueIdPool> counter_map = new ConcurrentHashMap<>();
 
-    /**
-     * Consumer map
-     */
+    /** Consumer map */
     @Nonnull
     private final Map<String,Map<Integer,Consumer<String>>> consumer_map = new ConcurrentHashMap<>();
 
-    /**
-     * PubSub object
-     */
+    /** PubSub object */
     @Nonnull
     private final PubSub pubsub;
 
-    /**
-     * Subscription count
-     */
+    /** Subscription count */
     @Nonnull
     private final AtomicLong subscriptions = new AtomicLong(0);
 
-    /**
-     * Closed
-     */
+    /** Closed CDL */
     @Nonnull
     private final CountDownLatch closed_cdl = new CountDownLatch(1);
 
@@ -71,7 +55,7 @@ public final class JedisPubSubManager implements AutoCloseable{
         // Create new exclusive connection
         this.connection = new Jedis(hostname, port);
 
-        // Ping it
+        // Ping it (test the connection)
         this.connection.ping("Hello!");
 
         // Set up CDLs
@@ -84,7 +68,7 @@ public final class JedisPubSubManager implements AutoCloseable{
         // Start the blocking subscription in another thread
         new Thread(() -> {
 
-            // Subscribe to default channel name - and blocks until finish
+            // Subscribe to default channel name - method will block until unsubscribe() is called
             this.connection.subscribe(this.pubsub, DEFAULT_CHANNEL_NAME);
 
             // Countdown to indicate that subscription is closed
@@ -92,34 +76,30 @@ public final class JedisPubSubManager implements AutoCloseable{
 
         }).start();
 
-        // Wait for pubsub to become ready
         try{
+
+            // Wait for pubsub to become ready
             ready_cdl.await();
+
+            // Create test connection
+            try(Jedis connection = new Jedis(hostname, port)){
+
+                // Send test message to ensure that pubsub is ready - poll as much as needed
+                int counts = 0;
+                int max_failure = 20;
+                do{
+
+                    // Stop if failing too much
+                    if(counts++ == max_failure) throw new RuntimeException("Failed to acknowledge the PubSub manager!");
+
+                    // Publish
+                    connection.publish(DEFAULT_CHANNEL_NAME, "JedisPubSubManager helloing!");
+
+                }while(!message_cdl.await(100, TimeUnit.MILLISECONDS)); // Wait for pub sub to receive message
+            }
+
         }catch(InterruptedException e){
             throw new RuntimeException(e);
-        }
-
-        // Create test connection
-        try(Jedis connection = new Jedis(hostname, port)){
-
-            // Send test message to ensure that pubsub is ready - poll as much as needed
-            int counts = 0;
-            int max_failure = 20;
-            while(true){
-
-                // Stop if failing too much
-                if(counts++ == max_failure) throw new RuntimeException("Failed to acknowledge the PubSub manager!");
-
-                // Publish
-                connection.publish(DEFAULT_CHANNEL_NAME, "JedisPubSubManager helloing!");
-
-                // Wait for pub sub to receive message
-                try{
-                    if(message_cdl.await(100, TimeUnit.MILLISECONDS)) break;
-                }catch(InterruptedException e){
-                    throw new RuntimeException(e);
-                }
-            }
         }
     }
 
@@ -205,25 +185,19 @@ public final class JedisPubSubManager implements AutoCloseable{
         this.connection.close();
     }
 
-    /**
-     * Customized JedisPubSub class
-     */
+    /** Customized JedisPubSub class */
     private static class PubSub extends JedisPubSub{
 
-        /**
-         * Channel function map
-         */
+        /** Channel function map */
         @Nonnull
         private final Map<String,Map<Integer,Consumer<String>>> channel_function_map;
 
-        /**
-         * CDL to ensure that it's working
-         */
+        /** CDL to ensure that it's working */
         @Nonnull
         private final CountDownLatch cdl;
 
         /**
-         * PubSub
+         * PubSub constructor
          *
          * @param channel_function_map channel map
          * @param ready_cdl            CDL for ready

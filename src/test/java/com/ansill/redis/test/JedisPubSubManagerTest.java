@@ -146,7 +146,7 @@ class JedisPubSubManagerTest{
 
     @DisplayName("Multiple channel test")
     @RepeatedTest(3)
-    void multipleChanneTest() throws InterruptedException, TimeoutException{
+    void multipleChannelTest() throws InterruptedException, TimeoutException{
 
         // Get manager
         try(JedisPubSubManager manager = new JedisPubSubManager(SERVER.getHostname(), SERVER.getPort())){

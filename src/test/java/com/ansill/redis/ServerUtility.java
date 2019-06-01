@@ -60,6 +60,7 @@ public final class ServerUtility{
         }
     }
 
+    @SuppressWarnings("SameReturnValue")
     public final static class Server implements AutoCloseable{
 
         @Nonnull
