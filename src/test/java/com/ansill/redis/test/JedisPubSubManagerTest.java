@@ -4,7 +4,11 @@ import com.ansill.redis.Channel;
 import com.ansill.redis.JedisPubSubManager;
 import com.ansill.redis.ServerUtility;
 import com.ansill.redis.Subscription;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
@@ -38,11 +42,42 @@ class JedisPubSubManagerTest{
         return (Math.random() + "").replace(".", "");
     }
 
+    @DisplayName("Connection to nonexistent server test")
     @Test
     void testNonexistentServer(){
-
         assertThrows(JedisConnectionException.class, () -> new JedisPubSubManager("nonexistent", 1));
+    }
 
+    @SuppressWarnings("ConstantConditions")
+    @DisplayName("Initializing with null hostname test")
+    @Test
+    void invalidHostnameTest(){
+        assertThrows(IllegalArgumentException.class, () -> new JedisPubSubManager(null, 1));
+    }
+
+    @DisplayName("Initializing with negative port test")
+    @Test
+    void invalidPortTest(){
+        assertThrows(IllegalArgumentException.class, () -> new JedisPubSubManager("localhost", -1337));
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    @DisplayName("Initializing with invalid channel test")
+    @Test
+    void invalidChannelTest(){
+        try(JedisPubSubManager manager = new JedisPubSubManager(SERVER.getHostname(), SERVER.getPort())){
+            assertThrows(IllegalArgumentException.class, () -> manager.subscribe(null, messsage -> {
+            }));
+        }
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    @DisplayName("Initializing with invalid consumer test")
+    @Test
+    void invalidConsumerTest(){
+        try(JedisPubSubManager manager = new JedisPubSubManager(SERVER.getHostname(), SERVER.getPort())){
+            assertThrows(IllegalArgumentException.class, () -> manager.subscribe("my_channel", null));
+        }
     }
 
     @DisplayName("Simple subscription test")

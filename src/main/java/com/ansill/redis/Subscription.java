@@ -2,6 +2,7 @@ package com.ansill.redis;
 
 import javax.annotation.Nonnull;
 
+/** Subscription reference that allows users to unsubscribe later on */
 @SuppressWarnings("unused")
 public class Subscription implements AutoCloseable{
 
@@ -22,16 +23,17 @@ public class Subscription implements AutoCloseable{
     }
 
     /** Cancels the subscription */
+    @SuppressWarnings("WeakerAccess")
     public void cancel(){
-        this.close();
-    }
-
-    @Override
-    public void close(){
         if(!is_canceled){
             this.is_canceled = true;
             this.closing_runnable.run();
         }
+    }
+
+    @Override
+    public void close(){
+        this.cancel();
     }
 
     /**

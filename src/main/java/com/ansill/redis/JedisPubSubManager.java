@@ -1,5 +1,6 @@
 package com.ansill.redis;
 
+import com.ansill.validation.Validation;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
 
@@ -47,10 +48,15 @@ public final class JedisPubSubManager implements AutoCloseable{
     /**
      * Creates pub sub manager
      *
-     * @param hostname hostname
-     * @param port     port
+     * @param hostname hostname of the server
+     * @param port     port of the server
+     * @throws IllegalArgumentException thrown if any of parameters is invalid
      */
-    public JedisPubSubManager(@Nonnull String hostname, @Nonnegative int port){
+    public JedisPubSubManager(@Nonnull String hostname, @Nonnegative int port) throws IllegalArgumentException{
+
+        // Assert parameters
+        Validation.assertNonemptyString(hostname, "hostname");
+        Validation.assertNaturalNumber(port, "port");
 
         // Create new exclusive connection
         this.connection = new Jedis(hostname, port);
@@ -109,9 +115,15 @@ public final class JedisPubSubManager implements AutoCloseable{
      * @param channel  channel name
      * @param consumer consumer function
      * @return subscription reference
+     * @throws IllegalArgumentException thrown if any of parameters is invalid
      */
     @Nonnull
-    public Subscription subscribe(@Nonnull String channel, @Nonnull Consumer<String> consumer){
+    public Subscription subscribe(@Nonnull String channel, @Nonnull Consumer<String> consumer)
+    throws IllegalArgumentException{
+
+        // Assert parameters
+        Validation.assertNonnull(channel, "channel");
+        Validation.assertNonnull(consumer, "consumer");
 
         // Error if closed
         if(this.closed_cdl.getCount() == 0) throw new IllegalStateException("JedisPubSubManager is closed!");
@@ -164,6 +176,7 @@ public final class JedisPubSubManager implements AutoCloseable{
      *
      * @return subscription count
      */
+    @Nonnegative
     public long getSubscriptionCount(){
         return this.subscriptions.get();
     }

@@ -6,8 +6,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /** Class that keeps tracks of unique ids - supports ((2^32) - 1) many ids */
-@SuppressWarnings("WeakerAccess")
-public class UniqueIdPool{
+class UniqueIdPool{
 
     /** Pool of claimed ids */
     @Nonnull
@@ -18,7 +17,7 @@ public class UniqueIdPool{
     private final AtomicInteger counter = new AtomicInteger(0);
 
     /** Default constructor */
-    public UniqueIdPool(){
+    UniqueIdPool(){
     }
 
     /**
@@ -27,7 +26,7 @@ public class UniqueIdPool{
      * @return unique id
      */
     @SuppressWarnings("StatementWithEmptyBody")
-    public synchronized int draw(){
+    synchronized int draw(){
 
         // Throw if pool is full
         if(this.pool.size() == Integer.MAX_VALUE) throw new RuntimeException("Pool is full");
@@ -49,7 +48,7 @@ public class UniqueIdPool{
      * @return true if id is valid, false if it has never been claimed
      */
     @SuppressWarnings("UnusedReturnValue")
-    public synchronized boolean surrender(int id){
+    synchronized boolean surrender(int id){
         return this.pool.remove(id);
     }
 }

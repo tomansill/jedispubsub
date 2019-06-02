@@ -13,6 +13,7 @@ I needed an easy-to-use library that wraps Jedis's PubSub implementation and let
 
 * Java 8 or better
 * Maven
+* [My Java Validation library](https://github.com/tomansill/JavaValidation)
 
 ## Download
 
